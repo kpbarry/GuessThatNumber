@@ -71,17 +71,56 @@ namespace GuessThatNumber
                     guessCount++;
                 }
             }
+
+            AddHighScore(guessCount);
+            DisplayHighScores();
             //Ask if they want to play again
             Console.WriteLine("Would you like to play again?");
             string playAgain = Console.ReadLine();
             //If y, Y, yes or Yes, play again, otherwise quit
-            if (playAgain == "y" || playAgain == "yes")
+            if (playAgain.Contains('y'))
             {
                 GuessThatNumber();
             }
             else
             {
                 Environment.Exit(0);
+            }
+        }
+
+        static void AddHighScore(int playerScore)
+        {
+            Console.WriteLine("Your name: ");
+            string playerName = Console.ReadLine();
+
+            //Create a gateway to the database
+            KevinEntities db = new KevinEntities();
+            
+            //Create new high score object
+            HighScore newHighScore = new HighScore();
+            newHighScore.DateCreated = DateTime.Now;
+            newHighScore.Game = "Guess That Number";
+            newHighScore.Name = playerName;
+            newHighScore.Score = playerScore;
+
+            //Add it to the database
+            db.HighScores.Add(newHighScore);
+
+            //Save changes to db
+            db.SaveChanges();
+        }
+
+        static void DisplayHighScores()
+        {
+            Console.Clear();
+            Console.WriteLine("Guess That Number High Scores");
+            Console.WriteLine("-----------------------------");
+
+            KevinEntities db = new KevinEntities();
+            List<HighScore> highScoreList = db.HighScores.Where(x => x.Game == "Guess That Number").OrderBy(x => x.Score).Take(10).ToList();
+            foreach (HighScore i in highScoreList)
+            {
+                Console.WriteLine("{0}. {1} - {2} - {3}", highScoreList.IndexOf(i) + 1, i.Name, i.Score, i.DateCreated.Value.ToShortDateString());
             }
         }
     }
